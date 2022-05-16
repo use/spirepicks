@@ -2,6 +2,7 @@
 import {useEffect, useState} from 'react';
 import { cardDb } from '../cards';
 import { relicDb } from '../relics';
+import Image from 'next/image';
 
 type CardData  = {
   name: string,
@@ -308,19 +309,20 @@ function RelicListItem(props: {
         style={{
           padding: '6px 8px',
           display: 'flex',
-          alignItems: 'baseline'
+          alignItems: 'center',
         }}
       >
-        <div>{props.itemName}</div>
-        <div
+        <img
+          src={`relics/${iteminfo.name}.png`}
+          alt={iteminfo.name}
           style={{
-            fontSize: '.6rem',
-            color: 'hsl(0, 0%, 45%)',
-            fontWeight: 'bold',
-            textTransform: 'uppercase',
-            paddingLeft: '8px',
+            height: '32px',
+            width: '32px',
+            objectFit: 'contain',
+            marginRight: '8px',
           }}
-        >{iteminfo.rarity}</div>
+        />
+        <div>{props.itemName}</div>
       </div>
     </div>
   );
