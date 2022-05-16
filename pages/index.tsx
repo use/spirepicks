@@ -1,18 +1,14 @@
 // index.html
 import {useEffect, useState} from 'react';
 import { cardDb } from '../cards';
+import { relicDb } from '../relics';
 
 type CardData  = {
   name: string,
   type: string,
   rarity:
     // string,
-    'Basic' |
-    'Common' |
-    'Uncommon' |
-    'Rare' |
-    'Special' |
-    'Curse',
+    Rarity,
   cost: string,
   desc: string,
   desc_upgraded: string,
@@ -27,14 +23,26 @@ type CardData  = {
     'STATUS',
 }
 
+type RelicData = {
+  name: string,
+  rarity: Rarity,
+  char: CharName | "",
+  desc: string,
+  flavor: string,
+  cond: string,
+}
+
+type Rarity = 'Basic' | 'Common' | 'Uncommon' | 'Rare' | 'Special' | 'Curse';
 type CharName = 'IRONCLAD' | 'SILENT' | 'DEFECT' | 'WATCHER';
 
 type DeckList = string[]
+type RelicList = string[]
 
 type AddedCardTarget = 'DECK' | 'OFFER';
 
 export default function HomePage() {
   const [decklist, updateDecklist] = useState([]);
+  const [relicList, updateRelicList] = useState([]);
   const [offerList, updateOfferList] = useState(['Shrug It Off', 'Anger', 'Demon Form']);
   const [selectedChar, updateSelectedChar] = useState<CharName>('IRONCLAD');
   const [addedCardTarget, updateAddedCardTarget] = useState<AddedCardTarget>('DECK')
@@ -52,6 +60,15 @@ export default function HomePage() {
     }
   }
 
+  function addRelic(relicName: string) {
+    const relicData = relicDb.find((relic) => relic.name === relicName);
+    if (!relicData) {
+      console.error(`Can't find relic ${relicName}`);
+      return;
+    }
+    updateRelicList([...relicList, relicName]);
+  }
+
   function handleAddedCardTargetClick(newTarget: AddedCardTarget) {
     updateAddedCardTarget(newTarget);
   }
@@ -60,6 +77,12 @@ export default function HomePage() {
     const newList = [...decklist];
     newList.splice(index, 1);
     updateDecklist(newList);
+  }
+
+  function handleRelicListItemClick(relicName: string, index: number) {
+    const newList = [...relicList];
+    newList.splice(index, 1);
+    updateRelicList(newList);
   }
 
   function handleOfferListCardClick(card: string, index: number) {
@@ -73,7 +96,7 @@ export default function HomePage() {
       style={{
         display: "grid",
         gridGap: '2rem',
-        gridTemplateColumns: '250px 250px 250px',
+        gridTemplateColumns: '250px 250px 250px 250px',
         maxHeight: "90vh",
       }}
     >
@@ -84,12 +107,24 @@ export default function HomePage() {
         addedCardTarget={addedCardTarget}
         handleAddedCardTargetClick={handleAddedCardTargetClick}
       />
-      <DeckDisplay
-        decklist={decklist}
-        handleCardClick={handleDeckListCardClick}
-        handleAddCardsHereClick={() => updateAddedCardTarget('DECK')}
-        addCardsHere={addedCardTarget==='DECK'}
+      <RelicPicker
+        relicDb={relicDb as RelicData[]}
+        selectedChar={selectedChar}
+        handleClick={addRelic}
       />
+      <div>
+        <h2>Your Inventory</h2>
+        <DeckDisplay
+          decklist={decklist}
+          handleCardClick={handleDeckListCardClick}
+          handleAddCardsHereClick={() => updateAddedCardTarget('DECK')}
+          addCardsHere={addedCardTarget==='DECK'}
+        />
+        <RelicInventory
+          relicList={relicList}
+          handleItemClick={handleRelicListItemClick}
+        />
+      </div>
       <OfferDisplay
         offerList={offerList}
         handleCardClick={handleOfferListCardClick}
@@ -131,6 +166,37 @@ function CardPicker(props: {
   );
 }
 
+function RelicPicker(props: {
+  relicDb: RelicData[]
+  handleClick: (cardName: string) => void,
+  selectedChar: CharName,
+}) {
+  const relicsForChar = props.relicDb.filter((card) =>
+    card.char === props.selectedChar || card.char === ""
+  );
+  return (
+    <div>
+      <h2>Add Relics</h2>
+      <ul className="list-unstyled">
+        {relicsForChar.map((item, index) => (
+          <li
+            key={`${item.name}_${item.char}`}
+            style={{
+              marginBottom: '8px',
+            }}
+          >
+            <RelicListItem
+              handleClick={() => props.handleClick(item.name)}
+              itemName={item.name}
+              index={index}
+            />
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 function DeckDisplay(props: {
   decklist: DeckList,
   handleCardClick,
@@ -139,7 +205,7 @@ function DeckDisplay(props: {
 }) {
   return (
     <div>
-      <h2>Deck List</h2>
+      <h3>Deck</h3>
       <CardsGoHerePicker
         handleClick={props.handleAddCardsHereClick}
         addCardsHere={props.addCardsHere}
@@ -154,6 +220,32 @@ function DeckDisplay(props: {
             <DeckListCard
               handleClick={props.handleCardClick}
               cardName={card}
+              index={index}
+            />
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function RelicInventory(props: {
+  relicList: RelicList,
+  handleItemClick,
+}) {
+  return (
+    <div>
+      <h3>Relics</h3>
+      <ul className="list-unstyled">
+        {props.relicList.map((itemName, index) => (
+          <li
+            style={{
+              marginBottom: '8px',
+            }}
+          >
+            <RelicListItem
+              handleClick={props.handleItemClick}
+              itemName={itemName}
               index={index}
             />
           </li>
@@ -191,6 +283,45 @@ function OfferDisplay(props: {
           </li>
         ))}
       </ul>
+    </div>
+  );
+}
+
+
+function RelicListItem(props: {
+  handleClick,
+  itemName: string,
+  index: number,
+}) {
+  const iteminfo: RelicData = (relicDb as RelicData[]).find(
+    (item) => item.name === props.itemName
+  );
+  return (
+    <div
+      onClick={() => props.handleClick(props.itemName, props.index)}
+      className='card'
+      style={{
+      }}
+    >
+      <div
+        className={`card--rarity-${iteminfo.rarity.toLowerCase()}`}
+        style={{
+          padding: '6px 8px',
+          display: 'flex',
+          alignItems: 'baseline'
+        }}
+      >
+        <div>{props.itemName}</div>
+        <div
+          style={{
+            fontSize: '.6rem',
+            color: 'hsl(0, 0%, 45%)',
+            fontWeight: 'bold',
+            textTransform: 'uppercase',
+            paddingLeft: '8px',
+          }}
+        >{iteminfo.rarity}</div>
+      </div>
     </div>
   );
 }

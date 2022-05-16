@@ -1,4 +1,4 @@
-export let relicsDb = [
+export let relicDb = [
   {
     name: "Burning Blood",
     rarity: "Starter",

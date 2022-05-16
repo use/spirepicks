@@ -5,9 +5,9 @@ body {
 }
 
 .card {
-  transition: .15s all ease;
+  // transition: .15s all ease;
   display: flex;
-  box-shadow: 0 4px 4px hsla(0, 0%, 0%, .15), 0 0 0 transparent;
+  box-shadow: 0 4px 8px hsla(0, 0%, 0%, .15), 0 0 0 transparent;
   flex-direction: column;
   background-color: white;
   border-radius: 6px;
@@ -16,12 +16,13 @@ body {
   cursor: pointer;
   &:hover {
     box-shadow:
-      0 4px 4px hsla(0, 0%, 0%, .15),
-      0 0 2px #333;
+      0 4px 8px hsla(0, 0%, 0%, .15),
+      0 0 3px 3px rgb(238, 151, 0);
   }
 }
 
-.card--rarity-basic {
+.card--rarity-basic,
+.card--rarity-starter {
   border-left: 4px solid hsl(0, 0%, 76%);
 }
 .card--rarity-common {
