@@ -307,7 +307,7 @@ function RelicListItem(props: {
       <div
         className={`card--rarity-${iteminfo.rarity.toLowerCase()}`}
         style={{
-          padding: '6px 8px',
+          padding: '2px 4px',
           display: 'flex',
           alignItems: 'center',
         }}
@@ -316,10 +316,13 @@ function RelicListItem(props: {
           src={`relics/${iteminfo.name}.png`}
           alt={iteminfo.name}
           style={{
-            height: '32px',
-            width: '32px',
+            height: '48px',
+            width: '48px',
             objectFit: 'contain',
-            marginRight: '8px',
+            marginRight: '4px',
+            marginLeft: "-4px",
+            marginTop: "-4px",
+            marginBottom: "-4px",
           }}
         />
         <div>{props.itemName}</div>
