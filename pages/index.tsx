@@ -262,6 +262,8 @@ function OfferDisplay(props: {
   addCardsHere: boolean,
   handleAddCardsHereClick,
 }) {
+  // find the best card
+  let pickedIndex = 1;
   return (
     <div>
       <h2>Being Offered</h2>
@@ -280,6 +282,7 @@ function OfferDisplay(props: {
               handleClick={props.handleCardClick}
               cardName={card}
               index={index}
+              isPicked={index === pickedIndex}
             />
           </li>
         ))}
@@ -335,6 +338,7 @@ function DeckListCard(props: {
   handleClick,
   cardName: string,
   index: number,
+  isPicked?: boolean,
 }) {
   const cardinfo: CardData = (cardDb as CardData[]).find(
     (card) => card.name === props.cardName
@@ -355,7 +359,13 @@ function DeckListCard(props: {
           alignItems: 'baseline'
         }}
       >
-        <div>{props.cardName}</div>
+        <div>
+          {props.cardName}
+          {props.isPicked
+            ? <b>PICKED!</b>
+            : ''
+          }
+        </div>
         <div
           style={{
             fontSize: '.6rem',
