@@ -218,17 +218,18 @@ export default function HomePage() {
         <p>
           <button
             onClick={() => handleAddRandCardClick('DECK')}
-          >Add Random Card</button>
+          >+ Random Card</button>
           {' '}
           <button
             onClick={handleAddRandRelicClick}
-          >Add Random Relic</button>
+          >+ Random Relic</button>
         </p>
         <DeckDisplay
           decklist={decklist}
           handleCardClick={handleDeckListCardClick}
           handleAddCardsHereClick={() => updateAddedCardTarget('DECK')}
           addCardsHere={addedCardTarget==='DECK'}
+          pairedCard={recommendation.pairsWith}
         />
         <RelicInventory
           relicList={relicList}
@@ -322,6 +323,7 @@ function DeckDisplay(props: {
   handleCardClick,
   addCardsHere: boolean,
   handleAddCardsHereClick,
+  pairedCard?: string,
 }) {
   return (
     <div>
@@ -341,6 +343,7 @@ function DeckDisplay(props: {
               handleClick={props.handleCardClick}
               cardName={card}
               index={index}
+              isPicked={props.pairedCard == card}
             />
           </li>
         ))}
@@ -385,13 +388,12 @@ function OfferDisplay(props: {
   handleRandomizeClick
 }) {
   // find the best card
-  let pickedIndex = 1;
   return (
     <div>
       <h2>Being Offered</h2>
       <button
         onClick={props.handleAddRandClick}
-      >Add Random Card</button>
+      >+ Random Card</button>
       {' '}
       <button
         onClick={props.handleRandomizeClick}
@@ -479,6 +481,10 @@ function DeckListCard(props: {
   const cardinfo: CardData = (cardDb as CardData[]).find(
     (card) => card.name === props.cardName
   );
+  const cardClassNames = [`card--rarity-${cardinfo.rarity.toLowerCase()}`];
+  if (props.isPicked) {
+    cardClassNames.push('card--picked');
+  }
   return (
     <div
       onClick={() => props.handleClick(props.cardName, props.index)}
@@ -488,12 +494,13 @@ function DeckListCard(props: {
       
     >
       <div
-        className={`card--rarity-${cardinfo.rarity.toLowerCase()}`}
+        className={cardClassNames.join(' ')}
         style={{
           padding: '6px 8px',
           display: 'flex',
           alignItems: 'baseline'
         }}
+        title={cardinfo.desc}
       >
         <div>
           {props.cardName}
@@ -509,7 +516,7 @@ function DeckListCard(props: {
         >{cardinfo.type}</div>
         {props.isPicked &&
           <div style={{marginLeft: '.5rem'}}>
-            <b>PICKED!</b>
+            ✅
           </div>
         }
       </div>
