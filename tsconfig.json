@@ -2,7 +2,6 @@
   "compilerOptions": {
     "jsx": "preserve",
     "target": "ES6",
-    // "resolveJsonModule": true,
     "moduleResolution": "Node",
     "lib": [
       "dom",

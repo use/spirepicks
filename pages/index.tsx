@@ -3,6 +3,8 @@ import {useEffect, useState} from 'react';
 import { cardDb } from '../cards';
 import { relicDb } from '../relics';
 import Image from 'next/image';
+import { nameLookupFromCorrect } from '../name_lookup';
+import * as correlations from '../correlations.json'
 
 type CardData  = {
   name: string,
@@ -41,12 +43,49 @@ type RelicList = string[]
 
 type AddedCardTarget = 'DECK' | 'OFFER';
 
+
+function correlation(a: string, b: string) {
+  const itemA = nameLookupFromCorrect.get(a);
+  const itemB = nameLookupFromCorrect.get(b);
+  let lookupStr = '';
+  if (itemB > itemA) {
+    lookupStr = `${itemA}|${itemB}`
+  } else {
+    lookupStr = `${itemB}|${itemA}`
+  }
+  return correlations.PCC[lookupStr];
+}
+
+function highestCorrelation(inventory: string[], offered: string[]) {
+  let highest = -1;
+  let selected = '';
+  for (let invIdx = 0; invIdx < inventory.length; invIdx++) {
+    for (let offIdx = 0; offIdx < offered.length; offIdx++) {
+      const corr = correlation(inventory[invIdx], offered[offIdx]);
+      if (corr > highest) {
+        highest = corr;
+        selected = offered[offIdx];
+      }
+    }
+  }
+  return selected;
+}
+
 export default function HomePage() {
   const [decklist, updateDecklist] = useState([]);
   const [relicList, updateRelicList] = useState([]);
   const [offerList, updateOfferList] = useState(['Shrug It Off', 'Anger', 'Demon Form']);
   const [selectedChar, updateSelectedChar] = useState<CharName>('IRONCLAD');
   const [addedCardTarget, updateAddedCardTarget] = useState<AddedCardTarget>('DECK')
+  const [recommendation, updateRecommendation] = useState<string>('');
+
+  useEffect(() => {
+    const newRecommendation = highestCorrelation(
+      decklist.concat(relicList),
+      offerList
+    );
+    updateRecommendation(newRecommendation);
+  }, [decklist, relicList, offerList]);
 
   function addCardToDeck(cardName: string) {
     const cardData = cardDb.find((card) => card.name === cardName);
@@ -131,6 +170,7 @@ export default function HomePage() {
         handleCardClick={handleOfferListCardClick}
         handleAddCardsHereClick={() => updateAddedCardTarget('OFFER')}
         addCardsHere={addedCardTarget==='OFFER'}
+        recommendation={recommendation}
       />
     </div>
   );
@@ -261,6 +301,7 @@ function OfferDisplay(props: {
   handleCardClick,
   addCardsHere: boolean,
   handleAddCardsHereClick,
+  recommendation: string,
 }) {
   // find the best card
   let pickedIndex = 1;
@@ -282,7 +323,7 @@ function OfferDisplay(props: {
               handleClick={props.handleCardClick}
               cardName={card}
               index={index}
-              isPicked={index === pickedIndex}
+              isPicked={card === props.recommendation}
             />
           </li>
         ))}
@@ -361,10 +402,6 @@ function DeckListCard(props: {
       >
         <div>
           {props.cardName}
-          {props.isPicked
-            ? <b>PICKED!</b>
-            : ''
-          }
         </div>
         <div
           style={{
@@ -375,6 +412,11 @@ function DeckListCard(props: {
             paddingLeft: '8px',
           }}
         >{cardinfo.type}</div>
+        {props.isPicked &&
+          <div style={{marginLeft: '.5rem'}}>
+            <b>PICKED!</b>
+          </div>
+        }
       </div>
     </div>
   );
