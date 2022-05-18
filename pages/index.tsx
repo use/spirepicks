@@ -81,8 +81,8 @@ function getRecommendation(inventory: string[], offered: string[]): recData {
 }
 
 export default function HomePage() {
-  const [decklist, updateDecklist] = useState([]);
-  const [relicList, updateRelicList] = useState([]);
+  const [decklist, updateDecklist] = useState<string[]>([]);
+  const [relicList, updateRelicList] = useState<string[]>([]);
   const [offerList, updateOfferList] = useState(['Shrug It Off', 'Anger', 'Demon Form']);
   const [selectedChar, updateSelectedChar] = useState<CharName>('IRONCLAD');
   const [addedCardTarget, updateAddedCardTarget] = useState<AddedCardTarget>('DECK')
@@ -143,6 +143,33 @@ export default function HomePage() {
     updateOfferList(newList);
   }
 
+  function handleAddStarterDeckClick() {
+    updateDecklist([
+      'Strike', 'Strike', 'Strike', 'Strike', 'Strike', 
+      'Defend', 'Defend', 'Defend', 'Defend',
+      'Bash',
+    ]);
+    updateRelicList([
+      'Burning Blood',
+    ]);
+  }
+
+  function handleAddRandCardClick() {
+    const cardsForChar = cardDb.filter((card) => card.char === selectedChar);
+    const card = cardsForChar[Math.floor(Math.random()*cardsForChar.length)];
+    updateDecklist([...decklist, card.name]);
+  }
+  
+  function handleAddRandRelicClick() {
+    const relicsForChar = relicDb.filter((relic) =>
+      (relic.char === selectedChar || relic.char === "")
+      &&
+      !relicList.includes(relic.name)
+    );
+    const relic = relicsForChar[Math.floor(Math.random()*relicsForChar.length)];
+    updateRelicList([...relicList, relic.name]);
+  }
+
   return (
     <div
       style={{
@@ -166,6 +193,20 @@ export default function HomePage() {
       />
       <div>
         <h2>Your Inventory</h2>
+        <p>
+          <button
+            onClick={handleAddStarterDeckClick}
+          >Add Starter Inventory</button>
+        </p>
+        <p>
+          <button
+            onClick={handleAddRandCardClick}
+          >Add Random Card</button>
+          {' '}
+          <button
+            onClick={handleAddRandRelicClick}
+          >Add Random Relic</button>
+        </p>
         <DeckDisplay
           decklist={decklist}
           handleCardClick={handleDeckListCardClick}
