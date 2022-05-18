@@ -83,7 +83,7 @@ function getRecommendation(inventory: string[], offered: string[]): recData {
 export default function HomePage() {
   const [decklist, updateDecklist] = useState<string[]>([]);
   const [relicList, updateRelicList] = useState<string[]>([]);
-  const [offerList, updateOfferList] = useState<string[]>(['Shrug It Off', 'Anger', 'Demon Form']);
+  const [offerList, updateOfferList] = useState<string[]>([]);
   const [selectedChar, updateSelectedChar] = useState<CharName>('IRONCLAD');
   const [addedCardTarget, updateAddedCardTarget] = useState<AddedCardTarget>('DECK')
   const [recommendation, updateRecommendation] = useState<recData>({
@@ -106,9 +106,9 @@ export default function HomePage() {
       return;
     }
     if (addedCardTarget === 'DECK') {
-      updateDecklist([...decklist, cardName]);
+      updateDecklist([cardName, ...decklist]);
     } else if (addedCardTarget === 'OFFER') {
-      updateOfferList([...offerList, cardName]);
+      updateOfferList([cardName, ...offerList]);
     }
   }
 
@@ -118,7 +118,7 @@ export default function HomePage() {
       console.error(`Can't find relic ${relicName}`);
       return;
     }
-    updateRelicList([...relicList, relicName]);
+    updateRelicList([relicName, ...relicList]);
   }
 
   function handleAddedCardTargetClick(newTarget: AddedCardTarget) {
@@ -158,9 +158,9 @@ export default function HomePage() {
     const cardsForChar = cardDb.filter((card) => card.char === selectedChar);
     const card = cardsForChar[Math.floor(Math.random()*cardsForChar.length)];
     if (target==='DECK') {
-      updateDecklist([...decklist, card.name]);
+      updateDecklist([card.name, ...decklist]);
     } else {
-      updateOfferList([...offerList, card.name]);
+      updateOfferList([card.name, ...offerList]);
     }
   }
 
@@ -213,7 +213,7 @@ export default function HomePage() {
         <p>
           <button
             onClick={handleAddStarterDeckClick}
-          >Add Starter Inventory</button>
+          >Set to Starter Inventory</button>
         </p>
         <p>
           <button
@@ -234,6 +234,7 @@ export default function HomePage() {
         <RelicInventory
           relicList={relicList}
           handleItemClick={handleRelicListItemClick}
+          pairedItem={recommendation.pairsWith}
         />
       </div>
       <OfferDisplay
@@ -256,12 +257,15 @@ function CardPicker(props: {
   selectedChar: CharName,
   addedCardTarget: AddedCardTarget,
 }) {
-  const cardsForChar = props.cardDb.filter((card) => card.char === props.selectedChar);
+  const cardsForChar = props.cardDb
+    .filter((card) => card.char === props.selectedChar)
+    .sort((a, b) => a.name > b.name ? 1 : -1);;
   return (
     <div style={{
       overflowY: 'scroll',
       overflowX: 'hidden',
       paddingRight: '1rem',
+      paddingLeft: '.5rem',
     }}>
       <h2>Add Cards</h2>
       <ul className="list-unstyled">
@@ -291,11 +295,12 @@ function RelicPicker(props: {
 }) {
   const relicsForChar = props.relicDb.filter((card) =>
     card.char === props.selectedChar || card.char === ""
-  );
+  ).sort((a, b) => a.name > b.name ? 1 : -1);
   return (
     <div style={{
       overflowY: 'scroll',
       paddingRight: '1rem',
+      paddingLeft: '.5rem',
     }}>
       <h2>Add Relics</h2>
       <ul className="list-unstyled">
@@ -355,6 +360,7 @@ function DeckDisplay(props: {
 function RelicInventory(props: {
   relicList: RelicList,
   handleItemClick,
+  pairedItem?: string,
 }) {
   return (
     <div>
@@ -370,6 +376,7 @@ function RelicInventory(props: {
               handleClick={props.handleItemClick}
               itemName={itemName}
               index={index}
+              isPicked={props.pairedItem == itemName}
             />
           </li>
         ))}
@@ -434,24 +441,27 @@ function RelicListItem(props: {
   handleClick,
   itemName: string,
   index: number,
+  isPicked?: boolean,
 }) {
   const iteminfo: RelicData = (relicDb as RelicData[]).find(
     (item) => item.name === props.itemName
   );
+  const cardClassNames = ['card', `card--rarity-${iteminfo.rarity.toLowerCase()}`];
+  if (props.isPicked) {
+    cardClassNames.push('card--picked');
+  }
   return (
     <div
       onClick={() => props.handleClick(props.itemName, props.index)}
-      className='card'
-      style={{
-      }}
+      className={cardClassNames.join(' ')}
     >
       <div
-        className={`card--rarity-${iteminfo.rarity.toLowerCase()}`}
         style={{
           padding: '2px 4px',
           display: 'flex',
           alignItems: 'center',
         }}
+        title={`(${iteminfo.rarity}) ${iteminfo.desc}`}
       >
         <img
           src={`relics/${iteminfo.name}.png`}
@@ -467,6 +477,11 @@ function RelicListItem(props: {
           }}
         />
         <div>{props.itemName}</div>
+        {props.isPicked &&
+          <div style={{marginLeft: '.5rem'}}>
+            ✅
+          </div>
+        }
       </div>
     </div>
   );
@@ -481,26 +496,22 @@ function DeckListCard(props: {
   const cardinfo: CardData = (cardDb as CardData[]).find(
     (card) => card.name === props.cardName
   );
-  const cardClassNames = [`card--rarity-${cardinfo.rarity.toLowerCase()}`];
+  const cardClassNames = ['card', `card--rarity-${cardinfo.rarity.toLowerCase()}`];
   if (props.isPicked) {
     cardClassNames.push('card--picked');
   }
   return (
     <div
       onClick={() => props.handleClick(props.cardName, props.index)}
-      className='card'
-      style={{
-      }}
-      
+      className={cardClassNames.join(' ')}
     >
       <div
-        className={cardClassNames.join(' ')}
         style={{
           padding: '6px 8px',
           display: 'flex',
           alignItems: 'baseline'
         }}
-        title={cardinfo.desc}
+        title={`(${cardinfo.rarity} ${cardinfo.type}) ${cardinfo.desc}`}
       >
         <div>
           {props.cardName}
