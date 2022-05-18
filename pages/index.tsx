@@ -43,6 +43,10 @@ type RelicList = string[]
 
 type AddedCardTarget = 'DECK' | 'OFFER';
 
+type recData = {
+  cardName: string,
+  pairsWith: string,
+};
 
 function correlation(a: string, b: string) {
   const itemA = nameLookupFromCorrect.get(a);
@@ -56,19 +60,24 @@ function correlation(a: string, b: string) {
   return correlations.PCC[lookupStr];
 }
 
-function highestCorrelation(inventory: string[], offered: string[]) {
+function getRecommendation(inventory: string[], offered: string[]): recData {
   let highest = -1;
   let selected = '';
+  let pairsWith = '';
   for (let invIdx = 0; invIdx < inventory.length; invIdx++) {
     for (let offIdx = 0; offIdx < offered.length; offIdx++) {
       const corr = correlation(inventory[invIdx], offered[offIdx]);
       if (corr > highest) {
         highest = corr;
         selected = offered[offIdx];
+        pairsWith = inventory[invIdx];
       }
     }
   }
-  return selected;
+  return {
+    cardName: selected,
+    pairsWith: pairsWith,
+  };
 }
 
 export default function HomePage() {
@@ -77,10 +86,13 @@ export default function HomePage() {
   const [offerList, updateOfferList] = useState(['Shrug It Off', 'Anger', 'Demon Form']);
   const [selectedChar, updateSelectedChar] = useState<CharName>('IRONCLAD');
   const [addedCardTarget, updateAddedCardTarget] = useState<AddedCardTarget>('DECK')
-  const [recommendation, updateRecommendation] = useState<string>('');
+  const [recommendation, updateRecommendation] = useState<recData>({
+    cardName: '',
+    pairsWith: '',
+  });
 
   useEffect(() => {
-    const newRecommendation = highestCorrelation(
+    const newRecommendation = getRecommendation(
       decklist.concat(relicList),
       offerList
     );
@@ -301,7 +313,7 @@ function OfferDisplay(props: {
   handleCardClick,
   addCardsHere: boolean,
   handleAddCardsHereClick,
-  recommendation: string,
+  recommendation: recData,
 }) {
   // find the best card
   let pickedIndex = 1;
@@ -323,11 +335,18 @@ function OfferDisplay(props: {
               handleClick={props.handleCardClick}
               cardName={card}
               index={index}
-              isPicked={card === props.recommendation}
+              isPicked={card === props.recommendation.cardName}
             />
           </li>
         ))}
       </ul>
+      {props.recommendation.cardName && (
+        <p>
+          Picked <strong>{props.recommendation.cardName}</strong>
+          {' '}
+          because you have <strong>{props.recommendation.pairsWith}</strong>.
+        </p>
+      )}
     </div>
   );
 }
