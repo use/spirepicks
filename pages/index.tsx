@@ -83,7 +83,7 @@ function getRecommendation(inventory: string[], offered: string[]): recData {
 export default function HomePage() {
   const [decklist, updateDecklist] = useState<string[]>([]);
   const [relicList, updateRelicList] = useState<string[]>([]);
-  const [offerList, updateOfferList] = useState(['Shrug It Off', 'Anger', 'Demon Form']);
+  const [offerList, updateOfferList] = useState<string[]>(['Shrug It Off', 'Anger', 'Demon Form']);
   const [selectedChar, updateSelectedChar] = useState<CharName>('IRONCLAD');
   const [addedCardTarget, updateAddedCardTarget] = useState<AddedCardTarget>('DECK')
   const [recommendation, updateRecommendation] = useState<recData>({
@@ -154,12 +154,26 @@ export default function HomePage() {
     ]);
   }
 
-  function handleAddRandCardClick() {
+  function handleAddRandCardClick(target: AddedCardTarget) {
     const cardsForChar = cardDb.filter((card) => card.char === selectedChar);
     const card = cardsForChar[Math.floor(Math.random()*cardsForChar.length)];
-    updateDecklist([...decklist, card.name]);
+    if (target==='DECK') {
+      updateDecklist([...decklist, card.name]);
+    } else {
+      updateOfferList([...offerList, card.name]);
+    }
   }
-  
+
+  function handleRandomizeOffersClick(target: AddedCardTarget) {
+    const cardsForChar = cardDb.filter((card) => card.char === selectedChar);
+    const newOffers = [];
+    for (let i = 0; i < 3; i++) {
+      const card = cardsForChar[Math.floor(Math.random()*cardsForChar.length)];
+      newOffers.push(card.name);
+    }
+    updateOfferList(newOffers);
+  }
+
   function handleAddRandRelicClick() {
     const relicsForChar = relicDb.filter((relic) =>
       (relic.char === selectedChar || relic.char === "")
@@ -203,7 +217,7 @@ export default function HomePage() {
         </p>
         <p>
           <button
-            onClick={handleAddRandCardClick}
+            onClick={() => handleAddRandCardClick('DECK')}
           >Add Random Card</button>
           {' '}
           <button
@@ -227,6 +241,8 @@ export default function HomePage() {
         handleAddCardsHereClick={() => updateAddedCardTarget('OFFER')}
         addCardsHere={addedCardTarget==='OFFER'}
         recommendation={recommendation}
+        handleAddRandClick={() => handleAddRandCardClick('OFFER')}
+        handleRandomizeClick={handleRandomizeOffersClick}
       />
     </div>
   );
@@ -365,12 +381,21 @@ function OfferDisplay(props: {
   addCardsHere: boolean,
   handleAddCardsHereClick,
   recommendation: recData,
+  handleAddRandClick,
+  handleRandomizeClick
 }) {
   // find the best card
   let pickedIndex = 1;
   return (
     <div>
       <h2>Being Offered</h2>
+      <button
+        onClick={props.handleAddRandClick}
+      >Add Random Card</button>
+      {' '}
+      <button
+        onClick={props.handleRandomizeClick}
+      >Random Three</button>
       <CardsGoHerePicker
         handleClick={props.handleAddCardsHereClick}
         addCardsHere={props.addCardsHere}
