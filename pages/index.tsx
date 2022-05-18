@@ -175,10 +175,15 @@ export default function HomePage() {
       style={{
         display: "grid",
         gridGap: '2rem',
-        gridTemplateColumns: '250px 250px 250px 250px',
-        maxHeight: "90vh",
+        gridTemplateColumns: '280px 280px 280px 280px',
+        gridTemplateRows: 'calc(100vh - 40px)',
       }}
     >
+      <RelicPicker
+        relicDb={relicDb as RelicData[]}
+        selectedChar={selectedChar}
+        handleClick={addRelic}
+      />
       <CardPicker
         cardDb={cardDb as CardData[]}
         handleCardClick={addCardToDeck}
@@ -186,12 +191,10 @@ export default function HomePage() {
         addedCardTarget={addedCardTarget}
         handleAddedCardTargetClick={handleAddedCardTargetClick}
       />
-      <RelicPicker
-        relicDb={relicDb as RelicData[]}
-        selectedChar={selectedChar}
-        handleClick={addRelic}
-      />
-      <div>
+      <div style={{
+        overflowY: 'auto',
+        paddingRight: '1rem',
+      }}>
         <h2>Your Inventory</h2>
         <p>
           <button
@@ -238,7 +241,11 @@ function CardPicker(props: {
 }) {
   const cardsForChar = props.cardDb.filter((card) => card.char === props.selectedChar);
   return (
-    <div>
+    <div style={{
+      overflowY: 'scroll',
+      overflowX: 'hidden',
+      paddingRight: '1rem',
+    }}>
       <h2>Add Cards</h2>
       <ul className="list-unstyled">
         {cardsForChar.map((card, index) => (
@@ -269,7 +276,10 @@ function RelicPicker(props: {
     card.char === props.selectedChar || card.char === ""
   );
   return (
-    <div>
+    <div style={{
+      overflowY: 'scroll',
+      paddingRight: '1rem',
+    }}>
       <h2>Add Relics</h2>
       <ul className="list-unstyled">
         {relicsForChar.map((item, index) => (
