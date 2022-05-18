@@ -190,9 +190,18 @@ export default function HomePage() {
         display: "grid",
         gridGap: '2rem',
         gridTemplateColumns: '280px 280px 280px 280px',
-        gridTemplateRows: 'calc(100vh - 40px)',
+        height: 'calc(100vh - 40px)',
       }}
     >
+      <div style={{
+        gridColumn: '1 / 5'
+      }}>
+        Character:{' '}
+        <CharSelectButton char="IRONCLAD" selected={true}/>{' '}
+        <CharSelectButton char="SILENT" disabled={true}/>{' '}
+        <CharSelectButton char="DEFECT" disabled={true}/>{' '}
+        <CharSelectButton char="WATCHER" disabled={true}/>
+      </div>
       <RelicPicker
         relicDb={relicDb as RelicData[]}
         selectedChar={selectedChar}
@@ -248,6 +257,16 @@ export default function HomePage() {
       />
     </div>
   );
+}
+
+function CharSelectButton(props: {
+  char: CharName,
+  selected?: boolean,
+  disabled?: boolean,
+}) {
+  return (
+    <button disabled={props.disabled}>{props.char}</button>
+  )
 }
 
 function CardPicker(props: {
@@ -507,7 +526,7 @@ function DeckListCard(props: {
     >
       <div
         style={{
-          padding: '6px 8px',
+          padding: '4px 8px',
           display: 'flex',
           alignItems: 'baseline'
         }}
@@ -520,8 +539,6 @@ function DeckListCard(props: {
           style={{
             fontSize: '.6rem',
             color: 'hsl(0, 0%, 45%)',
-            fontWeight: 'bold',
-            textTransform: 'uppercase',
             paddingLeft: '8px',
           }}
         >{cardinfo.type}</div>
