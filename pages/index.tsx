@@ -2,9 +2,8 @@
 import {useEffect, useState} from 'react';
 import { cardDb } from '../cards';
 import { relicDb } from '../relics';
-import Image from 'next/image';
 import { nameLookupFromCorrect } from '../name_lookup';
-import * as correlations from '../correlations.json'
+import correlations from '../correlations.json'
 
 type CardData  = {
   name: string,
@@ -558,7 +557,6 @@ function CardsGoHerePicker(props: {
 }) {
   return (
     <label
-      onClick={props.handleClick}
       style={{
         padding: "16px 0px",
         display: 'block',
@@ -568,6 +566,7 @@ function CardsGoHerePicker(props: {
       <input
         type="radio"
         checked={props.addCardsHere}
+        onChange={props.handleClick}
       />
       Add cards here
     </label>
