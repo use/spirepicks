@@ -164,7 +164,8 @@ export default function HomePage() {
   }
 
   function handleAddRandCardClick(target: AddedCardTarget) {
-    const cardsForChar = cardDb.filter((card) => card.char === selectedChar);
+    const cardsForChar = cardDb.filter((card) => card.char === selectedChar)
+      .filter((c) => c.rarity !== 'Basic');
     const card = cardsForChar[Math.floor(Math.random()*cardsForChar.length)];
     if (target==='DECK') {
       updateDecklist([card.name, ...decklist]);
@@ -174,7 +175,8 @@ export default function HomePage() {
   }
 
   function handleRandomizeOffersClick(target: AddedCardTarget) {
-    const cardsForChar = cardDb.filter((card) => card.char === selectedChar);
+    const cardsForChar = cardDb.filter((card) => card.char === selectedChar)
+      .filter((c) => c.rarity !== 'Basic');
     const newOffers = [];
     for (let i = 0; i < 3; i++) {
       const card = cardsForChar[Math.floor(Math.random()*cardsForChar.length)];
