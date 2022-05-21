@@ -226,6 +226,7 @@ export default function HomePage() {
       <div style={{
         overflowY: 'auto',
         paddingRight: '1rem',
+        paddingLeft: '.5rem',
       }}>
         <h2>Your Inventory</h2>
         <p>
