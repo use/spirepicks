@@ -4,6 +4,7 @@ import { cardDb } from '../cards';
 import { relicDb } from '../relics';
 import { nameLookupFromCorrect } from '../name_lookup';
 import correlations from '../correlations.json'
+import { floors } from '../floors';
 
 type CardData  = {
   name: string,
@@ -45,6 +46,14 @@ type AddedCardTarget = 'DECK' | 'OFFER';
 type recData = {
   cardName: string,
   pairsWith: string,
+};
+
+type Floor = number;
+
+type FloorData = {
+  act: number,
+  desc: string,
+  disabled?: boolean,
 };
 
 function correlation(a: string, b: string) {
@@ -89,6 +98,7 @@ export default function HomePage() {
     cardName: '',
     pairsWith: '',
   });
+  const [floor, updateFloor] = useState<Floor>(1);
 
   useEffect(() => {
     const newRecommendation = getRecommendation(
@@ -218,6 +228,15 @@ export default function HomePage() {
         paddingRight: '1rem',
       }}>
         <h2>Your Inventory</h2>
+        <p>
+          Floor:
+          {' '}
+          <FloorPicker
+            floor={floor}
+            floors={floors}
+            handleChange={updateFloor}
+          />
+        </p>
         <p>
           <button
             onClick={handleAddStarterDeckClick}
@@ -573,5 +592,36 @@ function CardsGoHerePicker(props: {
       />
       Add cards here
     </label>
+  );
+}
+
+function FloorPicker(props: {
+  floors: {[key: number]: FloorData},
+  floor: Floor,
+  handleChange,
+}) {
+  return (
+    <select
+      onChange={(e) => props.handleChange(e.target[e.target.selectedIndex].getAttribute('value'))}
+      value={props.floor}
+    >
+      {[1, 2, 3, 4].map((act) => (
+        <optgroup
+          key={act}
+          label={`Act ${act}`}
+        >
+          {floors.filter((f) => f.act===act).map((floor) => (
+            <option
+              key={floor.floorNum}
+              value={floor.floorNum}
+              disabled={floor.disabled}
+            >
+              {floor.floorNum}
+              {floor.desc && ` - ${floor.desc}`}
+            </option>
+          ))}
+        </optgroup>
+      ))}
+    </select>
   );
 }
