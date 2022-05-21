@@ -5,6 +5,7 @@ import { relicDb } from '../relics';
 import { nameLookupFromCorrect } from '../name_lookup';
 import correlations from '../correlations.json'
 import { floors } from '../floors';
+import pickRates from '../pickrates.json';
 
 type CardData  = {
   name: string,
@@ -86,6 +87,13 @@ function getRecommendation(inventory: string[], offered: string[]): RecData {
     cardName: selected,
     pairsWith: pairsWith,
   };
+}
+
+function getPickRateString(cardName: string, floor: Floor) {
+  let percent = Math.round(100 * pickRates[cardName][floor + ".0"]);
+  let pickRate = percent + "%";
+  console.log(cardName, floor, percent, pickRate);
+  return pickRate;
 }
 
 export default function HomePage() {
@@ -275,6 +283,7 @@ export default function HomePage() {
         recommendation={recommendation}
         handleAddRandClick={() => handleAddRandCardClick('OFFER')}
         handleRandomizeClick={handleRandomizeOffersClick}
+        currentFloor={floor}
       />
     </div>
   );
@@ -434,7 +443,8 @@ function OfferDisplay(props: {
   handleAddCardsHereClick,
   recommendation: RecData,
   handleAddRandClick,
-  handleRandomizeClick
+  handleRandomizeClick,
+  currentFloor: number,
 }) {
   // find the best card
   return (
@@ -464,6 +474,8 @@ function OfferDisplay(props: {
               cardName={card}
               index={index}
               isPicked={card === props.recommendation.cardName}
+              showPickRate={true}
+              currentFloor={props.currentFloor}
             />
           </li>
         ))}
@@ -535,7 +547,13 @@ function DeckListCard(props: {
   cardName: string,
   index: number,
   isPicked?: boolean,
+  currentFloor?: Floor,
+  showPickRate?: boolean,
 }) {
+  let pickRate = '';
+  if (props.showPickRate && props.currentFloor) {
+    pickRate = getPickRateString(props.cardName, props.currentFloor);
+  }
   const cardinfo: CardData = (cardDb as CardData[]).find(
     (card) => card.name === props.cardName
   );
@@ -571,6 +589,7 @@ function DeckListCard(props: {
             ✅
           </div>
         }
+        {props.showPickRate && props.currentFloor && pickRate}
       </div>
     </div>
   );

@@ -303,7 +303,7 @@ export let floors = [
         floorNum: 50,
         act: 3,
         desc: 'Boss Battle',
-        disabled: false,
+        disabled: true,
     },
     {
         floorNum: 51,
