@@ -358,6 +358,7 @@ function DeckDisplay(props: {
       <ul className="list-unstyled">
         {props.decklist.map((card, index) => (
           <li
+            key={index}
             style={{
               marginBottom: '8px',
             }}
@@ -386,6 +387,7 @@ function RelicInventory(props: {
       <ul className="list-unstyled">
         {props.relicList.map((itemName, index) => (
           <li
+            key={index}
             style={{
               marginBottom: '8px',
             }}
@@ -430,6 +432,7 @@ function OfferDisplay(props: {
       <ul className="list-unstyled">
         {props.offerList.map((card, index) => (
           <li
+            key={index}
             style={{
               marginBottom: '8px',
             }}
