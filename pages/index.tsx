@@ -43,7 +43,7 @@ type RelicList = string[]
 
 type AddedCardTarget = 'DECK' | 'OFFER';
 
-type recData = {
+type RecData = {
   cardName: string,
   pairsWith: string,
 };
@@ -68,7 +68,7 @@ function correlation(a: string, b: string) {
   return correlations.PCC[lookupStr];
 }
 
-function getRecommendation(inventory: string[], offered: string[]): recData {
+function getRecommendation(inventory: string[], offered: string[]): RecData {
   let highest = -1;
   let selected = '';
   let pairsWith = '';
@@ -94,7 +94,7 @@ export default function HomePage() {
   const [offerList, updateOfferList] = useState<string[]>([]);
   const [selectedChar, updateSelectedChar] = useState<CharName>('IRONCLAD');
   const [addedCardTarget, updateAddedCardTarget] = useState<AddedCardTarget>('DECK')
-  const [recommendation, updateRecommendation] = useState<recData>({
+  const [recommendation, updateRecommendation] = useState<RecData>({
     cardName: '',
     pairsWith: '',
   });
@@ -432,7 +432,7 @@ function OfferDisplay(props: {
   handleCardClick,
   addCardsHere: boolean,
   handleAddCardsHereClick,
-  recommendation: recData,
+  recommendation: RecData,
   handleAddRandClick,
   handleRandomizeClick
 }) {
