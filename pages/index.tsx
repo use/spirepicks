@@ -768,7 +768,7 @@ function DeckListCard(props: {
         title={`(${cardinfo.rarity} ${cardinfo.type}) ${cardinfo.desc}`}
       >
         <div
-          style={{display: 'flex', alignItems: 'baseline'}}
+          style={{display: 'flex', alignItems: 'baseline', flex: '1'}}
           onClick={props.handleClick
             ? () => props.handleClick(props.card.name, props.card.upgraded)
             : () => {}
