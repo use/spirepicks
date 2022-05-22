@@ -168,6 +168,19 @@ export default function HomePage() {
     }
   }
 
+  function addCardToDeckList(cardName: string, upgraded: boolean) {
+    const cardData = cardDb.find((card) => card.name === cardName);
+    if (!cardData) {
+      console.error(`Can't find card ${cardName}`);
+      return;
+    }
+    const newCard: CardItem = {
+      name: cardName,
+      upgraded: upgraded,
+    }
+    updateDecklist([newCard, ...decklist]);
+  }
+
   function addRelic(relicName: string) {
     const relicData = relicDb.find((relic) => relic.name === relicName);
     if (!relicData) {
@@ -370,6 +383,7 @@ export default function HomePage() {
           hoveredItem={hoveredItem}
           handleCardHover={handleItemHover}
           handleItemMouseLeave={handleItemMouseLeave}
+          handleCardClick={addCardToDeckList}
         />
         <p>
           <label>
@@ -563,6 +577,7 @@ function OfferDisplay(props: {
   hoveredItem: HoveredItem,
   handleCardHover,
   handleItemMouseLeave,
+  handleCardClick,
 }) {
   // find the best card
   return (
@@ -599,6 +614,7 @@ function OfferDisplay(props: {
               hoveredItemName={props.hoveredItem.name}
               handleHover={(cardName) => props.handleCardHover(cardName, 'OFFER')}
               handleMouseLeave={props.handleItemMouseLeave}
+              handleClick={props.handleCardClick}
             />
           </li>
         ))}
@@ -719,9 +735,9 @@ function DeckListCard(props: {
   }
   return (
     <div
-      onClick={(props.handleUpgradeClick || props.handleRemoveClick)
-        ? () => {}
-        : () => props.handleClick(props.card.name, props.index)}
+      // onClick={(props.handleUpgradeClick || props.handleRemoveClick)
+      //   ? () => {}
+      //   : () => props.handleClick(props.card.name, props.index)}
       className={cardClassNames.join(' ')}
       onMouseOver={props.handleHover
         ? () => props.handleHover(props.card.name)
@@ -733,7 +749,13 @@ function DeckListCard(props: {
         style={style}
         title={`(${cardinfo.rarity} ${cardinfo.type}) ${cardinfo.desc}`}
       >
-        <div style={{display: 'flex', alignItems: 'baseline'}}>
+        <div
+          style={{display: 'flex', alignItems: 'baseline'}}
+          onClick={props.handleClick
+            ? () => props.handleClick(props.card.name, props.card.upgraded)
+            : () => {}
+          }
+        >
           <div style={{
             padding: '4px 0 4px 8px',
           }}>
