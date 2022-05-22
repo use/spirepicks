@@ -62,6 +62,11 @@ type FloorData = {
   disabled?: boolean,
 };
 
+type HoveredItem = {
+  name: string,
+  location: 'DECK' | 'OFFER' | 'RELICS' | 'NONE',
+};
+
 function correlation(a: string, b: string) {
   const itemA = nameLookupFromCorrect.get(a);
   const itemB = nameLookupFromCorrect.get(b);
@@ -131,6 +136,10 @@ export default function HomePage() {
   });
   const [floor, updateFloor] = useState<Floor>(1);
   const [considerPickrates, updateConsiderPickrates] = useState<boolean>(false);
+  const [hoveredItem, updateHoveredItem] = useState<HoveredItem>({
+    name: '',
+    location: 'NONE',
+  });
 
   useEffect(() => {
     const newRecommendation = getRecommendation(
@@ -255,6 +264,20 @@ export default function HomePage() {
     }
   }
 
+  function handleItemHover(itemName: string, location: HoveredItem['location']) {
+    updateHoveredItem({
+      name: itemName,
+      location: location,
+    });
+  }
+
+  function handleItemMouseLeave() {
+    updateHoveredItem({
+      name: '',
+      location: 'NONE',
+    });
+  }
+
   return (
     <div
       style={{
@@ -320,11 +343,17 @@ export default function HomePage() {
           handleAddCardsHereClick={() => updateAddedCardTarget('DECK')}
           addCardsHere={addedCardTarget==='DECK'}
           pairedCard={recommendation.pairsWith}
+          hoveredItem={hoveredItem}
+          handleCardHover={handleItemHover}
+          handleItemMouseLeave={handleItemMouseLeave}
         />
         <RelicInventory
           relicList={relicList}
           handleItemClick={handleRelicListItemClick}
           pairedItem={recommendation.pairsWith}
+          hoveredItem={hoveredItem}
+          handleItemHover={handleItemHover}
+          handleItemMouseLeave={handleItemMouseLeave}
         />
       </div>
       <div>
@@ -338,6 +367,9 @@ export default function HomePage() {
           handleRandomizeClick={handleRandomizeOffersClick}
           currentFloor={floor}
           handleUpgradeClick={(index) => upgradeCard('OFFER', index)}
+          hoveredItem={hoveredItem}
+          handleCardHover={handleItemHover}
+          handleItemMouseLeave={handleItemMouseLeave}
         />
         <p>
           <label>
@@ -446,6 +478,9 @@ function DeckDisplay(props: {
   addCardsHere: boolean,
   handleAddCardsHereClick,
   pairedCard?: string,
+  hoveredItem: HoveredItem,
+  handleCardHover,
+  handleItemMouseLeave,
 }) {
   return (
     <div>
@@ -467,6 +502,10 @@ function DeckDisplay(props: {
               card={card}
               index={index}
               isPicked={props.pairedCard == card.name}
+              showCorr={props.hoveredItem.location === 'OFFER'}
+              hoveredItemName={props.hoveredItem.name}
+              handleHover={(cardName) => props.handleCardHover(cardName, 'DECK')}
+              handleMouseLeave={props.handleItemMouseLeave}
             />
           </li>
         ))}
@@ -479,6 +518,9 @@ function RelicInventory(props: {
   relicList: RelicList,
   handleItemClick,
   pairedItem?: string,
+  hoveredItem: HoveredItem,
+  handleItemHover,
+  handleItemMouseLeave,
 }) {
   return (
     <div>
@@ -496,6 +538,10 @@ function RelicInventory(props: {
               itemName={itemName}
               index={index}
               isPicked={props.pairedItem == itemName}
+              showCorr={props.hoveredItem.location === 'OFFER'}
+              hoveredItemName={props.hoveredItem.name}
+              handleItemHover={(itemName) => props.handleItemHover(itemName, 'RELICS')}
+              handleItemMouseLeave={props.handleItemMouseLeave}
             />
           </li>
         ))}
@@ -514,6 +560,9 @@ function OfferDisplay(props: {
   handleRandomizeClick,
   currentFloor: number,
   handleUpgradeClick,
+  hoveredItem: HoveredItem,
+  handleCardHover,
+  handleItemMouseLeave,
 }) {
   // find the best card
   return (
@@ -546,6 +595,10 @@ function OfferDisplay(props: {
               showPickRate={true}
               currentFloor={props.currentFloor}
               handleUpgradeClick={props.handleUpgradeClick}
+              showCorr={['DECK', 'RELICS'].includes(props.hoveredItem.location)}
+              hoveredItemName={props.hoveredItem.name}
+              handleHover={(cardName) => props.handleCardHover(cardName, 'OFFER')}
+              handleMouseLeave={props.handleItemMouseLeave}
             />
           </li>
         ))}
@@ -567,6 +620,10 @@ function RelicListItem(props: {
   itemName: string,
   index: number,
   isPicked?: boolean,
+  showCorr?: boolean,
+  hoveredItemName?: string,
+  handleItemHover?,
+  handleItemMouseLeave?,
 }) {
   const iteminfo: RelicData = (relicDb as RelicData[]).find(
     (item) => item.name === props.itemName
@@ -575,17 +632,29 @@ function RelicListItem(props: {
   if (props.isPicked) {
     cardClassNames.push('card--picked');
   }
+  const style = {
+    padding: '2px 4px',
+    display: 'flex',
+    alignItems: 'center',
+  };
+  let corr = 0;
+  if (props.showCorr && props.hoveredItemName) {
+    corr = correlation(props.hoveredItemName, props.itemName);
+    corr = 2 * Math.round(corr * 100);
+    style['backgroundColor'] = `hsl(138, 100%, ${100 - corr}%)`;
+  }
   return (
     <div
       onClick={() => props.handleClick(props.itemName, props.index)}
       className={cardClassNames.join(' ')}
+      onMouseOver={props.handleItemHover
+        ? () => props.handleItemHover(props.itemName)
+        : () => {}
+      }
+      onMouseLeave={props.handleItemMouseLeave || (() => {})}
     >
       <div
-        style={{
-          padding: '2px 4px',
-          display: 'flex',
-          alignItems: 'center',
-        }}
+        style={style}
         title={`(${iteminfo.rarity}) ${iteminfo.desc}`}
       >
         <img
@@ -621,6 +690,10 @@ function DeckListCard(props: {
   currentFloor?: Floor,
   showPickRate?: boolean,
   handleUpgradeClick?,
+  showCorr?: boolean,
+  hoveredItemName?: string,
+  handleHover?,
+  handleMouseLeave?,
 }) {
   let pickRate = '';
   if (props.showPickRate && props.currentFloor) {
@@ -633,19 +706,31 @@ function DeckListCard(props: {
   if (props.isPicked) {
     cardClassNames.push('card--picked');
   }
+  let style = {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'stretch',
+  };
+  let corr = 0;
+  if (props.showCorr && props.hoveredItemName) {
+    corr = correlation(props.hoveredItemName, props.card.name);
+    corr = 2 * Math.round(corr * 100);
+    style['backgroundColor'] = `hsl(138, 100%, ${100 - corr}%)`;
+  }
   return (
     <div
       onClick={(props.handleUpgradeClick || props.handleRemoveClick)
         ? () => {}
         : () => props.handleClick(props.card.name, props.index)}
       className={cardClassNames.join(' ')}
+      onMouseOver={props.handleHover
+        ? () => props.handleHover(props.card.name)
+        : () => {}
+      }
+      onMouseLeave={props.handleMouseLeave || (() => {})}
     >
       <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'stretch'
-        }}
+        style={style}
         title={`(${cardinfo.rarity} ${cardinfo.type}) ${cardinfo.desc}`}
       >
         <div style={{display: 'flex', alignItems: 'baseline'}}>
