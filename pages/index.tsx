@@ -6,6 +6,7 @@ import { nameLookupFromCorrect } from '../name_lookup';
 import correlations from '../correlations.json'
 import { floors } from '../floors';
 import pickRates from '../pickrates.json';
+import skipRate from '../skip_rate.json';
 
 type CardData  = {
   name: string,
@@ -79,6 +80,10 @@ function correlation(a: string, b: string) {
   return correlations.PCC[lookupStr];
 }
 
+function getSkipRate(floor: Floor): number {
+  return skipRate[floor + ".0"];
+}
+
 function getRecommendation(
   inventory: string[],
   offered: CardItem[],
@@ -106,7 +111,10 @@ function getRecommendation(
       }
     }
   }
-  console.log(highest);
+  if (getSkipRate(floor) * .03 > highest) {
+    selected = 'SKIP';
+    pairsWith = '';
+  }
   return {
     cardName: selected,
     pairsWith: pairsWith,
@@ -619,11 +627,21 @@ function OfferDisplay(props: {
           </li>
         ))}
       </ul>
-      {props.recommendation.cardName && (
+      {props.recommendation.cardName && props.recommendation.cardName != 'SKIP' && (
         <p>
           Picked <strong>{props.recommendation.cardName}</strong>
           {' '}
           because you have <strong>{props.recommendation.pairsWith}</strong>.
+        </p>
+      )}
+      {props.recommendation.cardName === 'SKIP' && (
+        <p>
+          You should <b>SKIP</b> because nothing looks great
+          {' '}
+          (skip rate for this floor is
+            {' '}
+            {Math.round(getSkipRate(props.currentFloor) * 100) + "%"}
+          )
         </p>
       )}
     </div>
