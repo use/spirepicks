@@ -637,13 +637,13 @@ function OfferDisplay(props: {
       {props.recommendation.cardName === 'SKIP' && (
         <p>
           You should <b>SKIP</b> because nothing looks great
-          {' '}
-          (skip rate for this floor is
-            {' '}
-            {Math.round(getSkipRate(props.currentFloor) * 100) + "%"}
-          )
         </p>
       )}
+      <p>
+        Skip rate for this floor is
+        {' '}
+        {Math.round(getSkipRate(props.currentFloor) * 100) + "%"}
+      </p>
     </div>
   );
 }
