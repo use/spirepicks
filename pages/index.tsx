@@ -27,6 +27,11 @@ type CardData  = {
     'STATUS',
 }
 
+type CardItem = {
+  name: string,
+  upgraded: boolean,
+};
+
 type RelicData = {
   name: string,
   rarity: Rarity,
@@ -39,7 +44,7 @@ type RelicData = {
 type Rarity = 'Basic' | 'Common' | 'Uncommon' | 'Rare' | 'Special' | 'Curse';
 type CharName = 'IRONCLAD' | 'SILENT' | 'DEFECT' | 'WATCHER';
 
-type DeckList = string[]
+type DeckList = CardItem[]
 type RelicList = string[]
 
 type AddedCardTarget = 'DECK' | 'OFFER';
@@ -89,17 +94,17 @@ function getRecommendation(inventory: string[], offered: string[]): RecData {
   };
 }
 
-function getPickRateString(cardName: string, floor: Floor) {
-  let percent = Math.round(100 * pickRates[cardName][floor + ".0"]);
+function getPickRateString(card: CardItem, floor: Floor) {
+  const cardString = card.name + (card.upgraded ? '+1' : '');
+  let percent = Math.round(100 * pickRates[cardString][floor + ".0"]);
   let pickRate = percent + "%";
-  console.log(cardName, floor, percent, pickRate);
   return pickRate;
 }
 
 export default function HomePage() {
-  const [decklist, updateDecklist] = useState<string[]>([]);
+  const [decklist, updateDecklist] = useState<CardItem[]>([]);
   const [relicList, updateRelicList] = useState<string[]>([]);
-  const [offerList, updateOfferList] = useState<string[]>([]);
+  const [offerList, updateOfferList] = useState<CardItem[]>([]);
   const [selectedChar, updateSelectedChar] = useState<CharName>('IRONCLAD');
   const [addedCardTarget, updateAddedCardTarget] = useState<AddedCardTarget>('DECK')
   const [recommendation, updateRecommendation] = useState<RecData>({
@@ -110,8 +115,8 @@ export default function HomePage() {
 
   useEffect(() => {
     const newRecommendation = getRecommendation(
-      decklist.concat(relicList),
-      offerList
+      decklist.map(c => c.name).concat(relicList),
+      offerList.map(c => c.name)
     );
     updateRecommendation(newRecommendation);
   }, [decklist, relicList, offerList]);
@@ -122,10 +127,14 @@ export default function HomePage() {
       console.error(`Can't find card ${cardName}`);
       return;
     }
+    const newCard: CardItem = {
+      name: cardName,
+      upgraded: false,
+    };
     if (addedCardTarget === 'DECK') {
-      updateDecklist([cardName, ...decklist]);
+      updateDecklist([newCard, ...decklist]);
     } else if (addedCardTarget === 'OFFER') {
-      updateOfferList([cardName, ...offerList]);
+      updateOfferList([newCard, ...offerList]);
     }
   }
 
@@ -165,7 +174,10 @@ export default function HomePage() {
       'Strike', 'Strike', 'Strike', 'Strike', 'Strike', 
       'Defend', 'Defend', 'Defend', 'Defend',
       'Bash',
-    ]);
+    ].map((name) => ({
+      name: name,
+      upgraded: false,
+    })));
     updateRelicList([
       'Burning Blood',
     ]);
@@ -175,10 +187,14 @@ export default function HomePage() {
     const cardsForChar = cardDb.filter((card) => card.char === selectedChar)
       .filter((c) => c.rarity !== 'Basic');
     const card = cardsForChar[Math.floor(Math.random()*cardsForChar.length)];
+    const newCard: CardItem = {
+      name: card.name,
+      upgraded: false,
+    };
     if (target==='DECK') {
-      updateDecklist([card.name, ...decklist]);
+      updateDecklist([newCard, ...decklist]);
     } else {
-      updateOfferList([card.name, ...offerList]);
+      updateOfferList([newCard, ...offerList]);
     }
   }
 
@@ -188,7 +204,7 @@ export default function HomePage() {
     const newOffers = [];
     for (let i = 0; i < 3; i++) {
       const card = cardsForChar[Math.floor(Math.random()*cardsForChar.length)];
-      newOffers.push(card.name);
+      newOffers.push(card);
     }
     updateOfferList(newOffers);
   }
@@ -201,6 +217,21 @@ export default function HomePage() {
     );
     const relic = relicsForChar[Math.floor(Math.random()*relicsForChar.length)];
     updateRelicList([...relicList, relic.name]);
+  }
+
+  function upgradeCard(target: AddedCardTarget, index: number) {
+    let tmp: CardItem[] = [];
+    if (target==='DECK') {
+      tmp = [...decklist];
+    } else {
+      tmp = [...offerList];
+    }
+    tmp[index].upgraded = !tmp[index].upgraded;
+    if (target==='DECK') {
+      updateDecklist(tmp);
+    } else {
+      updateOfferList(tmp);
+    }
   }
 
   return (
@@ -284,6 +315,7 @@ export default function HomePage() {
         handleAddRandClick={() => handleAddRandCardClick('OFFER')}
         handleRandomizeClick={handleRandomizeOffersClick}
         currentFloor={floor}
+        handleUpgradeClick={(index) => upgradeCard('OFFER', index)}
       />
     </div>
   );
@@ -327,7 +359,10 @@ function CardPicker(props: {
           >
             <DeckListCard
               handleClick={() => props.handleCardClick(card.name)}
-              cardName={card.name}
+              card={{
+                name: card.name,
+                upgraded: false,
+              }}
               index={index}
             />
           </li>
@@ -396,9 +431,9 @@ function DeckDisplay(props: {
           >
             <DeckListCard
               handleClick={props.handleCardClick}
-              cardName={card}
+              card={card}
               index={index}
-              isPicked={props.pairedCard == card}
+              isPicked={props.pairedCard == card.name}
             />
           </li>
         ))}
@@ -445,6 +480,7 @@ function OfferDisplay(props: {
   handleAddRandClick,
   handleRandomizeClick,
   currentFloor: number,
+  handleUpgradeClick,
 }) {
   // find the best card
   return (
@@ -471,11 +507,12 @@ function OfferDisplay(props: {
           >
             <DeckListCard
               handleClick={props.handleCardClick}
-              cardName={card}
+              card={card}
               index={index}
-              isPicked={card === props.recommendation.cardName}
+              isPicked={card.name === props.recommendation.cardName}
               showPickRate={true}
               currentFloor={props.currentFloor}
+              handleUpgradeClick={props.handleUpgradeClick}
             />
           </li>
         ))}
@@ -544,18 +581,19 @@ function RelicListItem(props: {
 
 function DeckListCard(props: {
   handleClick,
-  cardName: string,
+  card: CardItem,
   index: number,
   isPicked?: boolean,
   currentFloor?: Floor,
   showPickRate?: boolean,
+  handleUpgradeClick?,
 }) {
   let pickRate = '';
   if (props.showPickRate && props.currentFloor) {
-    pickRate = getPickRateString(props.cardName, props.currentFloor);
+    pickRate = getPickRateString(props.card, props.currentFloor);
   }
   const cardinfo: CardData = (cardDb as CardData[]).find(
-    (card) => card.name === props.cardName
+    (card) => card.name === props.card.name
   );
   const cardClassNames = ['card', `card--rarity-${cardinfo.rarity.toLowerCase()}`];
   if (props.isPicked) {
@@ -563,7 +601,9 @@ function DeckListCard(props: {
   }
   return (
     <div
-      onClick={() => props.handleClick(props.cardName, props.index)}
+      onClick={props.handleUpgradeClick
+        ? () => {}
+        : () => props.handleClick(props.card.name, props.index)}
       className={cardClassNames.join(' ')}
     >
       <div
@@ -575,7 +615,7 @@ function DeckListCard(props: {
         title={`(${cardinfo.rarity} ${cardinfo.type}) ${cardinfo.desc}`}
       >
         <div>
-          {props.cardName}
+          {props.card.name}
         </div>
         <div
           style={{
@@ -589,6 +629,15 @@ function DeckListCard(props: {
             ✅
           </div>
         }
+        {props.handleUpgradeClick && (
+          <button
+            onClick={() => props.handleUpgradeClick(props.index)}
+          >
+            U
+            {' '}
+            {props.card.upgraded ? 'Yes' : 'No'}
+          </button>
+        )}
         {props.showPickRate && props.currentFloor && pickRate}
       </div>
     </div>
