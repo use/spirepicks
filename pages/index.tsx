@@ -151,7 +151,7 @@ export default function HomePage() {
     updateAddedCardTarget(newTarget);
   }
 
-  function handleDeckListCardClick(card: string, index: number) {
+  function handleDeckListRemoveCardClick(index: number) {
     const newList = [...decklist];
     newList.splice(index, 1);
     updateDecklist(newList);
@@ -163,7 +163,7 @@ export default function HomePage() {
     updateRelicList(newList);
   }
 
-  function handleOfferListCardClick(card: string, index: number) {
+  function handleOfferListRemoveCardClick(index: number) {
     const newList = [...offerList];
     newList.splice(index, 1);
     updateOfferList(newList);
@@ -295,7 +295,7 @@ export default function HomePage() {
         </p>
         <DeckDisplay
           decklist={decklist}
-          handleCardClick={handleDeckListCardClick}
+          handleRemoveCardClick={handleDeckListRemoveCardClick}
           handleAddCardsHereClick={() => updateAddedCardTarget('DECK')}
           addCardsHere={addedCardTarget==='DECK'}
           pairedCard={recommendation.pairsWith}
@@ -308,7 +308,7 @@ export default function HomePage() {
       </div>
       <OfferDisplay
         offerList={offerList}
-        handleCardClick={handleOfferListCardClick}
+        handleRemoveCardClick={handleOfferListRemoveCardClick}
         handleAddCardsHereClick={() => updateAddedCardTarget('OFFER')}
         addCardsHere={addedCardTarget==='OFFER'}
         recommendation={recommendation}
@@ -409,7 +409,7 @@ function RelicPicker(props: {
 
 function DeckDisplay(props: {
   decklist: DeckList,
-  handleCardClick,
+  handleRemoveCardClick,
   addCardsHere: boolean,
   handleAddCardsHereClick,
   pairedCard?: string,
@@ -430,7 +430,7 @@ function DeckDisplay(props: {
             }}
           >
             <DeckListCard
-              handleClick={props.handleCardClick}
+              handleRemoveClick={props.handleRemoveCardClick}
               card={card}
               index={index}
               isPicked={props.pairedCard == card.name}
@@ -473,7 +473,7 @@ function RelicInventory(props: {
 
 function OfferDisplay(props: {
   offerList: DeckList
-  handleCardClick,
+  handleRemoveCardClick,
   addCardsHere: boolean,
   handleAddCardsHereClick,
   recommendation: RecData,
@@ -506,7 +506,7 @@ function OfferDisplay(props: {
             }}
           >
             <DeckListCard
-              handleClick={props.handleCardClick}
+              handleRemoveClick={props.handleRemoveCardClick}
               card={card}
               index={index}
               isPicked={card.name === props.recommendation.cardName}
@@ -580,7 +580,8 @@ function RelicListItem(props: {
 }
 
 function DeckListCard(props: {
-  handleClick,
+  handleClick?,
+  handleRemoveClick?,
   card: CardItem,
   index: number,
   isPicked?: boolean,
@@ -601,44 +602,86 @@ function DeckListCard(props: {
   }
   return (
     <div
-      onClick={props.handleUpgradeClick
+      onClick={(props.handleUpgradeClick || props.handleRemoveClick)
         ? () => {}
         : () => props.handleClick(props.card.name, props.index)}
       className={cardClassNames.join(' ')}
     >
       <div
         style={{
-          padding: '4px 8px',
           display: 'flex',
-          alignItems: 'baseline'
+          justifyContent: 'space-between',
+          alignItems: 'stretch'
         }}
         title={`(${cardinfo.rarity} ${cardinfo.type}) ${cardinfo.desc}`}
       >
-        <div>
-          {props.card.name}
-        </div>
-        <div
-          style={{
-            fontSize: '.6rem',
-            color: 'hsl(0, 0%, 45%)',
-            paddingLeft: '8px',
-          }}
-        >{cardinfo.type}</div>
-        {props.isPicked &&
-          <div style={{marginLeft: '.5rem'}}>
-            ✅
+        <div style={{display: 'flex', alignItems: 'baseline'}}>
+          <div style={{
+            padding: '4px 0 4px 8px',
+          }}>
+            {props.card.upgraded
+              ?
+              <span>
+                {props.card.name}<b>+</b>
+              </span>
+              :
+              props.card.name
+            }
           </div>
-        }
-        {props.handleUpgradeClick && (
-          <button
-            onClick={() => props.handleUpgradeClick(props.index)}
-          >
-            U
-            {' '}
-            {props.card.upgraded ? 'Yes' : 'No'}
-          </button>
-        )}
-        {props.showPickRate && props.currentFloor && pickRate}
+          <div
+            style={{
+              fontSize: '.6rem',
+              color: 'hsl(0, 0%, 45%)',
+              paddingLeft: '8px',
+            }}
+          >{cardinfo.type}</div>
+        </div>
+        <div style={{display: 'flex'}}>
+          <div style={{display: 'flex', alignItems: 'center'}}>
+            {props.isPicked &&
+              <div style={{marginLeft: '.5rem', marginRight: '.5rem'}}>
+                ✅
+              </div>
+            }
+            <div style={{marginRight: '.5rem'}}>
+              {props.showPickRate && props.currentFloor && pickRate}
+            </div>
+          </div>
+          {props.handleUpgradeClick && (
+            <button
+              title="Toggle upgrade"
+              style={{
+                appearance: 'none',
+                border: 'none',
+                borderLeft: '1px solid #ccc',
+                backgroundColor: 'transparent',
+                color: props.card.upgraded ? 'inherit' : '#999',
+                fontWeight: 'bold',
+                fontSize: '1.25rem',
+                cursor: 'pointer',
+              }}
+              onClick={() => props.handleUpgradeClick(props.index)}
+            >
+              +
+            </button>
+          )}
+          {props.handleRemoveClick && (
+            <button
+              title="Remove"
+              style={{
+                appearance: 'none',
+                border: 'none',
+                borderLeft: '1px solid #ccc',
+                backgroundColor: 'transparent',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+              }}
+              onClick={() => props.handleRemoveClick(props.index)}
+            >
+              ✖
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
