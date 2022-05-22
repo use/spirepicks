@@ -1,0 +1,8 @@
+card database stored as an array
+each entry is a cardData object
+deck list is an array of strings
+string is like
+    Body Slam
+    Strike+
+
+if we need quick lookup, we can use js Map object

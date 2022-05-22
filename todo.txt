@@ -1,0 +1,11 @@
+Log when item not found in correlations. Probably naming irregularity.
+Hover over items to see correlation in corresponding list
++ Toggle upgrade status
++    of card in list
++    of card in offer
++ Correlator should ignore upgrades
++ Export pick rate data by card and floor. Upgraded cards should count as their own card.
++ Show pick rate data of each card in offer
++ Add current floor selector. Select box probably.
++    Disable floors where you would never pick a card.
++    Such floors should have an explanation why it's disabled.
