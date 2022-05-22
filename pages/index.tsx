@@ -74,29 +74,47 @@ function correlation(a: string, b: string) {
   return correlations.PCC[lookupStr];
 }
 
-function getRecommendation(inventory: string[], offered: string[]): RecData {
+function getRecommendation(
+  inventory: string[],
+  offered: CardItem[],
+  floor: Floor,
+  considerPickRates: boolean,
+): RecData {
   let highest = -1;
   let selected = '';
   let pairsWith = '';
   for (let invIdx = 0; invIdx < inventory.length; invIdx++) {
     for (let offIdx = 0; offIdx < offered.length; offIdx++) {
-      const corr = correlation(inventory[invIdx], offered[offIdx]);
-      if (corr > highest) {
-        highest = corr;
-        selected = offered[offIdx];
+      const corr = correlation(inventory[invIdx], offered[offIdx].name);
+      let score = 0;
+      if (considerPickRates) {
+        const pickRate = getPickRate(offered[offIdx], floor);
+        score = corr * pickRate;
+      } else {
+        score = corr;
+      }
+
+      if (score > highest) {
+        highest = score;
+        selected = offered[offIdx].name;
         pairsWith = inventory[invIdx];
       }
     }
   }
+  console.log(highest);
   return {
     cardName: selected,
     pairsWith: pairsWith,
   };
 }
 
-function getPickRateString(card: CardItem, floor: Floor) {
+function getPickRate(card: CardItem, floor: Floor): number {
   const cardString = card.name + (card.upgraded ? '+1' : '');
-  let percent = Math.round(100 * pickRates[cardString][floor + ".0"]);
+  return pickRates[cardString][floor + ".0"];
+}
+
+function getPickRateString(card: CardItem, floor: Floor): string {
+  let percent = Math.round(100 * getPickRate(card, floor));
   let pickRate = percent + "%";
   return pickRate;
 }
@@ -112,14 +130,17 @@ export default function HomePage() {
     pairsWith: '',
   });
   const [floor, updateFloor] = useState<Floor>(1);
+  const [considerPickrates, updateConsiderPickrates] = useState<boolean>(false);
 
   useEffect(() => {
     const newRecommendation = getRecommendation(
       decklist.map(c => c.name).concat(relicList),
-      offerList.map(c => c.name)
+      offerList,
+      floor,
+      considerPickrates
     );
     updateRecommendation(newRecommendation);
-  }, [decklist, relicList, offerList]);
+  }, [decklist, relicList, offerList, considerPickrates]);
 
   function addCardToDeck(cardName: string) {
     const cardData = cardDb.find((card) => card.name === cardName);
@@ -306,17 +327,29 @@ export default function HomePage() {
           pairedItem={recommendation.pairsWith}
         />
       </div>
-      <OfferDisplay
-        offerList={offerList}
-        handleRemoveCardClick={handleOfferListRemoveCardClick}
-        handleAddCardsHereClick={() => updateAddedCardTarget('OFFER')}
-        addCardsHere={addedCardTarget==='OFFER'}
-        recommendation={recommendation}
-        handleAddRandClick={() => handleAddRandCardClick('OFFER')}
-        handleRandomizeClick={handleRandomizeOffersClick}
-        currentFloor={floor}
-        handleUpgradeClick={(index) => upgradeCard('OFFER', index)}
-      />
+      <div>
+        <OfferDisplay
+          offerList={offerList}
+          handleRemoveCardClick={handleOfferListRemoveCardClick}
+          handleAddCardsHereClick={() => updateAddedCardTarget('OFFER')}
+          addCardsHere={addedCardTarget==='OFFER'}
+          recommendation={recommendation}
+          handleAddRandClick={() => handleAddRandCardClick('OFFER')}
+          handleRandomizeClick={handleRandomizeOffersClick}
+          currentFloor={floor}
+          handleUpgradeClick={(index) => upgradeCard('OFFER', index)}
+        />
+        <p>
+          <label>
+            <input
+              type="checkbox"
+              checked={considerPickrates}
+              onChange={() => updateConsiderPickrates(!considerPickrates)}
+            />
+            {' Consider pickrates'}
+          </label>
+        </p>
+      </div>
     </div>
   );
 }
