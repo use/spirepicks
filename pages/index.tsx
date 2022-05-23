@@ -436,12 +436,11 @@ function CardPicker(props: {
       paddingLeft: '.5rem',
     }}>
       <h2>Add Cards</h2>
-      <ul className="list-unstyled">
+      <ul className="list-unstyled item-list">
         {cardsForChar.map((card, index) => (
           <li
             key={`${card.name}_${card.char}`}
             style={{
-              marginBottom: '8px',
             }}
           >
             <DeckListCard
@@ -474,12 +473,11 @@ function RelicPicker(props: {
       paddingLeft: '.5rem',
     }}>
       <h2>Add Relics</h2>
-      <ul className="list-unstyled">
+      <ul className="list-unstyled item-list">
         {relicsForChar.map((item, index) => (
           <li
             key={`${item.name}_${item.char}`}
             style={{
-              marginBottom: '8px',
             }}
           >
             <RelicListItem
@@ -511,12 +509,11 @@ function DeckDisplay(props: {
         handleClick={props.handleAddCardsHereClick}
         addCardsHere={props.addCardsHere}
       />
-      <ul className="list-unstyled">
+      <ul className="list-unstyled item-list">
         {props.decklist.map((card, index) => (
           <li
             key={index}
             style={{
-              marginBottom: '8px',
             }}
           >
             <DeckListCard
@@ -547,12 +544,11 @@ function RelicInventory(props: {
   return (
     <div>
       <h3>Relics</h3>
-      <ul className="list-unstyled">
+      <ul className="list-unstyled item-list">
         {props.relicList.map((itemName, index) => (
           <li
             key={index}
             style={{
-              marginBottom: '8px',
             }}
           >
             <RelicListItem
@@ -602,12 +598,11 @@ function OfferDisplay(props: {
         handleClick={props.handleAddCardsHereClick}
         addCardsHere={props.addCardsHere}
       />
-      <ul className="list-unstyled">
+      <ul className="list-unstyled item-list">
         {props.offerList.map((card, index) => (
           <li
             key={index}
             style={{
-              marginBottom: '8px',
             }}
           >
             <DeckListCard

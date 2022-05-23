@@ -1,4 +1,4 @@
-Clicking card in offer area should add to decklist
++ Clicking card in offer area should add to decklist
 Log when item not found in correlations. Probably naming irregularity.
 + Hover over items to see correlation in corresponding list
 + Toggle upgrade status

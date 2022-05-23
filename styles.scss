@@ -4,21 +4,29 @@ body {
   margin: 0 auto;
 }
 
+.item-list {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  overflow: hidden;
+  li > * {
+    border-bottom: 1px solid #ccc;
+  }
+  li:last-child > * {
+    border-bottom: 0;
+  }
+}
+
 .card {
   // transition: .15s all ease;
   display: flex;
-  box-shadow: 0 4px 8px hsla(0, 0%, 0%, .15), 0 0 0 transparent;
   flex-direction: column;
   background-color: white;
-  border-radius: 6px;
   font-family: 'Open Sans', sans-serif;
   overflow: hidden;
   border-left: 4px solid transparent;
   cursor: pointer;
   &:hover {
-    box-shadow:
-      0 4px 8px hsla(0, 0%, 0%, .15),
-      0 0 3px 3px rgb(0, 143, 238);
+    background-color: rgb(253, 253, 214);
   }
   &--picked {
     background-color: hsl(138, 94%, 81%);
