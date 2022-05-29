@@ -77,7 +77,11 @@ function correlation(a: string, b: string) {
   } else {
     lookupStr = `${itemB}|${itemA}`
   }
-  return correlations.PCC[lookupStr];
+  const corr = correlations.PCC[lookupStr];
+  if (corr===undefined) {
+    console.error(`Couldn't find correlation: ${lookupStr}`);
+  }
+  return corr;
 }
 
 function getSkipRate(floor: Floor): number {
@@ -123,7 +127,11 @@ function getRecommendation(
 
 function getPickRate(card: CardItem, floor: Floor): number {
   const cardString = card.name + (card.upgraded ? '+1' : '');
-  return pickRates[cardString][floor + ".0"];
+  const pickRate = pickRates[cardString][floor + ".0"];
+  if (pickRate === undefined) {
+    console.error(`Couldn't find pick rate: ${card.name}, floor ${floor}`);
+  }
+  return pickRate;
 }
 
 function getPickRateString(card: CardItem, floor: Floor): string {
