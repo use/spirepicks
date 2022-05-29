@@ -504,7 +504,7 @@ function DeckDisplay(props: {
 }) {
   return (
     <div>
-      <h3>Deck</h3>
+      <h3 style={{marginBottom: 0}}>Deck</h3>
       <CardsGoHerePicker
         handleClick={props.handleAddCardsHereClick}
         addCardsHere={props.addCardsHere}

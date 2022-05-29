@@ -46,6 +46,9 @@ body {
 .card--rarity-rare {
   border-left: 4px solid hsl(40, 99%, 64%);
 }
+.card--rarity-boss {
+  border-left: 4px solid hsl(290, 97%, 62%);
+}
 
 ul.list-unstyled {
   list-style: none;
